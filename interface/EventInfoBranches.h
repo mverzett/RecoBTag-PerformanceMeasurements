@@ -178,6 +178,20 @@ class EventInfoBranches {
     float ttbar_rho;
     float ttbar_w[500];
 
+    float lep_pt, lep_eta, lep_phi, lep_charge;
+    int lep_pdgId;
+    float met_pt, met_phi;
+
+    void RegisterTTSemiLepTree(TTree *tree) {
+      tree->Branch("lep_pt" , &lep_pt , "lep_pt/F");      
+      tree->Branch("lep_eta", &lep_eta, "lep_eta/F");      
+      tree->Branch("lep_phi", &lep_phi, "lep_phi/F");      
+      tree->Branch("lep_charge", &lep_charge,  "lep_charge/F");      
+      tree->Branch("lep_pdgId", &lep_pdgId, "lep_pdgId/I");
+      
+      tree->Branch("met_pt" , &met_pt , "met_pt/F");      
+      tree->Branch("met_phi", &met_phi, "met_phi/F");      
+    }
 
     void RegisterTree(TTree *tree) {
       tree->Branch("nBitTrigger", &nBitTrigger,  "nBitTrigger/I");
@@ -371,6 +385,16 @@ class EventInfoBranches {
     }
 
     //------------------------------------------------------------------------------------------------------------------
+
+    void ReadTTSemiLepTree(TTree *tree) {
+      tree->SetBranchAddress("lep_pt"    , &lep_pt );      
+      tree->SetBranchAddress("lep_eta"   , &lep_eta);      
+      tree->SetBranchAddress("lep_phi"   , &lep_phi);      
+      tree->SetBranchAddress("lep_charge", &lep_charge);      
+      tree->SetBranchAddress("lep_pdgId" , &lep_pdgId );      
+      tree->SetBranchAddress("met_pt"    , &met_pt );      
+      tree->SetBranchAddress("met_phi"   , &met_phi);      
+    }
 
     void ReadTree(TTree *tree) {
       tree->SetBranchAddress("nBitTrigger", &nBitTrigger);

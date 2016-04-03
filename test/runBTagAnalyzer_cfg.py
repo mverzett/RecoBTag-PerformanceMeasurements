@@ -85,6 +85,11 @@ options.register('useTTbarFilter', False,
     VarParsing.varType.bool,
     "Use TTbar filter"
 )
+options.register('useTTSemiLep', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Use TTbarSemiLeptonic filter and store additional event information"
+)
 options.register('useTopProjections', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
@@ -353,6 +358,9 @@ if options.fastSim:
         '/store/relval/CMSSW_7_4_0_pre9_ROOT6/RelValTTbar_13/GEN-SIM-DIGI-RECO/MCRUN2_74_V7_FastSim-v1/00000/026EF5C1-89D1-E411-9EBD-002590596490.root',
     ]
 
+if options.inputFiles:
+    process.source.fileNames = options.inputFiles
+
 ## Define the output file name
 if options.runOnData :
     options.outFilename += '_data'
@@ -456,7 +464,7 @@ if not options.miniAOD:
     ## Top projections in PF2PAT
     getattr(process,"pfPileUpJME"+postfix).checkClosestZVertex = False
     getattr(process,"pfNoPileUpJME"+postfix).enable = options.usePFchs
-    if options.useTTbarFilter:
+    if options.useTTbarFilter or options.useTTSemiLep:
 	getattr(process,"pfNoMuonJMEPFBRECO"+postfix).enable = False
 	getattr(process,"pfNoElectronJMEPFBRECO"+postfix).enable = False
     else:
@@ -492,7 +500,7 @@ else:
     process.packedGenParticlesForJetsNoNu = cms.EDFilter("CandPtrSelector", src = cms.InputTag("packedGenParticles"), cut = cms.string("abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16"))
     process.ak4GenJetsNoNu = ak4GenJets.clone(src = 'packedGenParticlesForJetsNoNu')
 
-    if options.useTTbarFilter:
+    if options.useTTbarFilter or options.useTTSemiLep:
         if options.usePFchs:
             process.ak4PFJets = ak4PFJets.clone(src = 'pfCHS', doAreaFastjet = True)
         else:
@@ -889,6 +897,20 @@ if options.useTTbarFilter:
     #setattr(process,'patConversions'+postfix) = cms.EDProducer("PATConversionProducer",
         #electronSource = cms.InputTag('selectedPatElectrons'+postfix)
     #)
+if options.useTTSemiLep:
+    process.load("RecoBTag.PerformanceMeasurements.TTSemiLepFilter_cfi")
+
+    #electron id
+    from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
+        
+    if options.miniAOD:
+        process.loosemuons.src = cms.InputTag('slimmedMuons')
+        process.tightmuons.vtx = pvSource
+        process.looseelectrons.src = cms.InputTag('slimmedElectrons')        
+    else:
+        process.loosemuons.src = cms.InputTag('selectedPatMuons'+postfix)
+        process.looseelectrons.src = cms.InputTag('selectedPatElectrons'+postfix)
+    process.ttjets.src  = cms.InputTag('selectedPatJets'+postfix)            
 #-------------------------------------
 
 #-------------------------------------
@@ -1001,6 +1023,7 @@ process.btagana.primaryVertexColl     = cms.InputTag(pvSource)
 process.btagana.Jets                  = cms.InputTag('selectedPatJets'+postfix)
 process.btagana.muonCollectionName    = cms.InputTag(muSource)
 process.btagana.patMuonCollectionName = cms.InputTag(patMuons)
+process.btagana.use_ttsemilep_filter  = cms.bool(options.useTTSemiLep)
 process.btagana.use_ttbar_filter      = cms.bool(options.useTTbarFilter)
 process.btagana.triggerTable          = cms.InputTag('TriggerResults::HLT') # Data and MC
 process.btagana.genParticles          = cms.InputTag(genParticles)
@@ -1101,6 +1124,8 @@ if options.runFatJets:
     process.analyzerSeq += process.btaganaFatJets
 if options.processStdAK4Jets and options.useTTbarFilter:
     process.analyzerSeq.replace( process.btagana, process.ttbarselectionproducer * process.ttbarselectionfilter * process.btagana )
+if options.useTTSemiLep:
+    process.analyzerSeq.replace( process.btagana, process.semilepFilterSequence * process.btagana )
 #---------------------------------------
 
 process.p = cms.Path(

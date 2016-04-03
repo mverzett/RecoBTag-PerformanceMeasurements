@@ -42,6 +42,7 @@ bTagAnalyzerCommon = cms.PSet(
     explicitJTA              = cms.bool(False),
     subJetMaxDeltaR          = cms.double(0.4),
     subJetExplicitJTA        = cms.bool(True),
+    use_ttsemilep_filter     = cms.bool(False),
     use_ttbar_filter         = cms.bool(False),
     ttbarproducer            = cms.InputTag("ttbarselectionproducer"),
     rho                      = cms.InputTag("fixedGridRhoFastjetAll"),
@@ -139,7 +140,13 @@ bTagAnalyzerCommon = cms.PSet(
         "HLT_HT2000_v*",
         "HLT_PFJet60_v*",
         "HLT_PFJet450_v*",
-        "HLT_PFJet500_v*"
+        "HLT_PFJet500_v*",
+        #TT Semi lep
+        'HLT_Ele27_WPLoose_Gsf_v*',
+        'HLT_Ele27_eta2p1_WPLoose_Gsf_v*',
+        'HLT_IsoMu27_v*',
+        'HLT_IsoMu20_v*',
+        'HLT_IsoTkMu20_v*'
     ),
     TTbarTriggerPathNames = cms.vstring(
         # trigger for ttbar: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TWikiTopRefEventSel#Triggers
@@ -149,5 +156,7 @@ bTagAnalyzerCommon = cms.PSet(
         "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*",                                      # muon + electron case1
         "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*"                                       # muon + electron case2
         ),
-    PFJet80TriggerPathNames = cms.vstring("HLT_PFJet80_v*")
+    PFJet80TriggerPathNames = cms.vstring("HLT_PFJet80_v*"),
+    leptons = cms.InputTag('leptons'),
+    MET = cms.InputTag('slimmedMETs')
 )

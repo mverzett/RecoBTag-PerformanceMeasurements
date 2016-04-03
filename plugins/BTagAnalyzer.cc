@@ -369,7 +369,10 @@ private:
   bool storeCTagVariables_;
   bool doCTag_;  
 
+  bool use_ttsemilep_filter_;
   bool use_ttbar_filter_;
+  edm::EDGetTokenT<std::vector<reco::LeafCandidate> > leptons_token_;
+  edm::EDGetTokenT<edm::View<pat::MET>  > MET_token_;
   edm::EDGetTokenT<edm::View<reco::GenParticle> > ttbarproducerGen_;
   edm::EDGetTokenT<edm::View<pat::Electron>> ttbarproducerEle_;
   edm::EDGetTokenT<edm::View<pat::Muon>> ttbarproducerMuon_;
@@ -524,6 +527,8 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   storeCTagVariables_ = iConfig.getParameter<bool>("storeCTagVariables");
   doCTag_             = iConfig.getParameter<bool>("doCTag");
 
+  use_ttsemilep_filter_ = iConfig.getParameter<bool> ("use_ttsemilep_filter");
+  std::cout << "use_ttsemilep_filter_ " << use_ttsemilep_filter_ << std::endl;
   use_ttbar_filter_ = iConfig.getParameter<bool> ("use_ttbar_filter");
   ttbarproducerGen_ = consumes<edm::View<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("ttbarproducer")),
   ttbarproducerEle_ = consumes<edm::View<pat::Electron>>(iConfig.getParameter<edm::InputTag>("ttbarproducer"));
@@ -664,6 +669,11 @@ BTagAnalyzerT<IPTI,VTX>::BTagAnalyzerT(const edm::ParameterSet& iConfig):
   if( storeEventInfo_ )
   {
     EventInfo.RegisterTree(smalltree);
+    if ( use_ttsemilep_filter_ ) { 
+      EventInfo.RegisterTTSemiLepTree(smalltree); 
+      leptons_token_ = consumes<std::vector<reco::LeafCandidate> >(iConfig.getParameter<edm::InputTag>("leptons"));
+      MET_token_ = consumes<edm::View<pat::MET>>(iConfig.getParameter<edm::InputTag>("MET"));
+    }
     if ( use_ttbar_filter_ )    EventInfo.RegisterTTbarTree(smalltree);
     if ( produceJetTrackTree_ ) EventInfo.RegisterJetTrackTree(smalltree);
     if ( produceAllTrackTree_ ) EventInfo.RegisterAllTrackTree(smalltree);
@@ -1306,6 +1316,28 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
   //   std::cout << "EventInfo.Evt:" <<EventInfo.Evt << std::endl;
   //   std::cout << "EventInfo.pthat:" <<EventInfo.pthat << std::endl;
 
+  //------------------------------------------------------
+  // ttbar semi leptonic information
+  //------------------------------------------------------
+  if(use_ttsemilep_filter_) { 
+    edm::Handle< std::vector<reco::LeafCandidate> > leptons;
+    iEvent.getByToken(leptons_token_, leptons);
+
+    if(leptons->size() == 0) {
+      std::cout << "Lepton size is zero!" << std::endl;
+      throw 42; //shoud be converted in proper CMS Exception
+    }
+    EventInfo.lep_pt  = leptons->at(0).pt();;      
+    EventInfo.lep_eta = leptons->at(0).eta();;      
+    EventInfo.lep_phi = leptons->at(0).phi();;      
+    EventInfo.lep_charge = leptons->at(0).charge();;      
+    EventInfo.lep_pdgId  = leptons->at(0).pdgId();;      
+
+    edm::Handle<edm::View<pat::MET> > selMETs;
+    iEvent.getByToken(MET_token_, selMETs);
+    EventInfo.met_pt  = selMETs->ptrAt(0)->pt();
+    EventInfo.met_phi = selMETs->ptrAt(0)->phi();
+  }
 
   //------------------------------------------------------
   // ttbar information

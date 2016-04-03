@@ -153,6 +153,11 @@ options.register('doCTag', False,
     VarParsing.varType.bool,
     "Make NTuples with branches for CTag"
 )
+options.register('storeCSVVars', True,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Make NTuples with branches for CTag"
+)
 ## 'maxEvents' is already registered by the Framework, changing default value
 options.setDefault('maxEvents', -1)
 
@@ -1018,7 +1023,7 @@ process.btagana.produceAllTrackTree   = False ## True if you want to keep info f
 process.btagana.producePtRelTemplate  = options.producePtRelTemplate  ## True for performance studies
 #------------------
 process.btagana.storeTagVariables     = False  ## True if you want to keep TagInfo TaggingVariables
-process.btagana.storeCSVTagVariables  = True  ## True if you want to keep CSV TaggingVariables
+process.btagana.storeCSVTagVariables  = options.storeCSVVars  ## True if you want to keep CSV TaggingVariables
 process.btagana.primaryVertexColl     = cms.InputTag(pvSource)
 process.btagana.Jets                  = cms.InputTag('selectedPatJets'+postfix)
 process.btagana.muonCollectionName    = cms.InputTag(muSource)
@@ -1125,6 +1130,7 @@ if options.runFatJets:
 if options.processStdAK4Jets and options.useTTbarFilter:
     process.analyzerSeq.replace( process.btagana, process.ttbarselectionproducer * process.ttbarselectionfilter * process.btagana )
 if options.useTTSemiLep:
+    process.btagana.Jets = 'ttjets'
     process.analyzerSeq.replace( process.btagana, process.semilepFilterSequence * process.btagana )
 #---------------------------------------
 

@@ -21,6 +21,7 @@ class EventInfoBranches {
     float GenPVz;
     float pthat;
     float mcweight;
+		float rho;
 
     int   nPV;
     int   BX;
@@ -192,7 +193,8 @@ class EventInfoBranches {
       tree->Branch("PVz"        , &PVz        ,  "PVz/F");
       tree->Branch("PVez"       , &PVez       ,  "PVez/F");
       tree->Branch("GenPVz"     , &GenPVz     ,  "GenPVz/F");
-
+			tree->Branch("rho"        , &rho        ,  "rho/F");
+			
       tree->Branch("nPUtrue"      , &nPUtrue     , "nPUtrue/F");
       tree->Branch("nPU"          , &nPU         , "nPU/I"    );
       tree->Branch("PU_bunch"     , PU_bunch     , "PU_bunch[nPU]/I");

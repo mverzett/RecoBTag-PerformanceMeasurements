@@ -1401,6 +1401,7 @@ void BTagAnalyzerT<IPTI,VTX>::analyze(const edm::Event& iEvent, const edm::Event
     edm::Handle< double > rhoH;
     iEvent.getByToken(rhoTag_,rhoH);
     EventInfo.ttbar_rho = *rhoH;
+		EventInfo.rho = *rhoH;
 
     //generator information
     EventInfo.ttbar_nw=0;
@@ -2047,6 +2048,22 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
         JetInfo[iJetColl].Track_nHitPXF[JetInfo[iJetColl].nTrack]  = ptrack.hitPattern().numberOfValidPixelEndcapHits();
         JetInfo[iJetColl].Track_isHitL1[JetInfo[iJetColl].nTrack]  = ptrack.hitPattern().hasValidHitInFirstPixelBarrel();
 
+				//encode hit pattern
+				unsigned int hitpat = 0;
+				for(auto code : {reco::HitPattern::HitCategory::TRACK_HITS, reco::HitPattern::HitCategory::MISSING_INNER_HITS, reco::HitPattern::HitCategory::MISSING_OUTER_HITS}) { //valid, missing, inactive
+					for(int ihit=0; ihit < ptrack.hitPattern().numberOfHits(code); ++ihit) {
+						uint16_t pattern = ptrack.hitPattern().getHitPattern(code, ihit);
+						if(!reco::HitPattern::trackerHitFilter(pattern)) continue; //reject if not tracker hit
+						
+						int layer = reco::HitPattern::getLayer(pattern);
+						if(layer < 1) throw cms::Exception("RuntimeError") << "I assumed that layer was >= 1 and I was wrong" << std::endl;						
+						uint32_t type = reco::HitPattern::getHitType(pattern);
+						if(type > 3) throw cms::Exception("RuntimeError") << "I assumed that the hit tipe was <= 3 and I was wrong" << std::endl;
+						hitpat += type*pow(4, layer-1);
+					}
+				}				
+				JetInfo[iJetColl].Track_hitpattern[JetInfo[iJetColl].nTrack] = hitpat;
+
         setTracksPV(ptrackRef, primaryVertex,
                     JetInfo[iJetColl].Track_PV[JetInfo[iJetColl].nTrack],
                     JetInfo[iJetColl].Track_PVweight[JetInfo[iJetColl].nTrack]);
@@ -2127,15 +2144,16 @@ void BTagAnalyzerT<IPTI,VTX>::processJets(const edm::Handle<PatJetCollection>& j
            if(useSelectedTracks_) theFlag  = classifier_.evaluate( toTrackRef(ipTagInfo->selectedTracks()[itt]) ).flags();
 	   else                   theFlag  = classifier_.evaluate( toTrackRef(tracks[itt]) ).flags();
 
-           if ( theFlag[TrackCategories::BWeakDecay] )	       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 1);
-           if ( theFlag[TrackCategories::CWeakDecay] )	       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 2);
-           if ( theFlag[TrackCategories::TauDecay] )	       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 3);
-           if ( theFlag[TrackCategories::ConversionsProcess] )JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 4);
-           if ( theFlag[TrackCategories::KsDecay] )	       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 5);
-           if ( theFlag[TrackCategories::LambdaDecay] )       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 6);
-           if ( theFlag[TrackCategories::HadronicProcess] )   JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 7);
-           if ( theFlag[TrackCategories::Fake] ) 	       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 8);
-           if ( theFlag[TrackCategories::SharedInnerHits] )   JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(10, -1 + 9);
+           if ( theFlag[TrackCategories::BWeakDecay] )	       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 1);
+           if ( theFlag[TrackCategories::CWeakDecay] )	       JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 2);
+           if ( theFlag[TrackCategories::TauDecay] )	         JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 3);
+           if ( theFlag[TrackCategories::ConversionsProcess] ) JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 4);
+           if ( theFlag[TrackCategories::KsDecay] )	           JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 5);
+           if ( theFlag[TrackCategories::LambdaDecay] )        JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 6);
+           if ( theFlag[TrackCategories::HadronicProcess] )    JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 7);
+           if ( theFlag[TrackCategories::Fake] ) 	             JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 8);
+           if ( theFlag[TrackCategories::SharedInnerHits] )    JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 9);
+           if ( theFlag[TrackCategories::SignalEvent] )        JetInfo[iJetColl].Track_history[JetInfo[iJetColl].nTrack] += pow(2, -1 + 10);
         }
 
         JetInfo[iJetColl].Track_category[JetInfo[iJetColl].nTrack] = -1;

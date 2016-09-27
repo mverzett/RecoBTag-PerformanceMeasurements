@@ -196,6 +196,7 @@ class JetInfoBranches {
     float Track_lengthTau[nMaxTrk_];
     float Track_distTau[nMaxTrk_];    
     int   Track_category[nMaxTrk_];
+    unsigned int   Track_hitpattern[nMaxTrk_];
 
     int   nTrkInc;
     float TrkInc_pt[nMaxTrk_];
@@ -618,6 +619,7 @@ class JetInfoBranches {
       tree->Branch((name+"Track_isfromSV").c_str()   ,Track_isfromSV   ,(name+"Track_isfromSV["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_isfromV0").c_str()   ,Track_isfromV0   ,(name+"Track_isfromV0["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_category").c_str()   ,Track_category   ,(name+"Track_category["+name+"nTrack]/I").c_str());
+      tree->Branch((name+"Track_hitpattern").c_str() ,Track_hitpattern ,(name+"Track_hitpattern["+name+"nTrack]/i").c_str());
     }
 
     void RegisterJetTrackIncTree(TTree *tree, std::string name="") {
@@ -1086,6 +1088,7 @@ class JetInfoBranches {
       tree->SetBranchAddress((name+"Track_isfromSV").c_str()  ,Track_isfromSV ) ;
        tree->SetBranchAddress((name+"Track_isfromV0").c_str()  ,Track_isfromV0 ) ;
       tree->SetBranchAddress((name+"Track_category").c_str()  ,Track_category ) ;
+			tree->SetBranchAddress((name+"Track_hitpattern").c_str()  ,Track_hitpattern) ;
     }
 
     void ReadJetTrackIncTree(TTree *tree, std::string name="") {

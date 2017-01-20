@@ -179,7 +179,52 @@ options.register('isReHLT', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     '80X reHLT samples')
-
+## Track History
+options.register('trkHistory', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Use track history"
+)
+options.register('allJetTracks', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Dump all jet tracks (regardless of selection)"
+)
+options.register('allTracks', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Dump all tracks (regardless of selection and jet matching)"
+)
+options.register('storeTagVariables', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Store Tagging Varibles"
+)
+options.register('fillsvTagInfo', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Store Tagging Varibles"
+)
+options.register('storeCSVTagVariables', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Store Tagging Varibles"
+)
+options.register('storeJetTracks', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Store Tagging Varibles"
+)
+options.register('noTrackSelection', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Store Tagging Varibles"
+)
+options.register('produceHelixInfo', False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Store Tagging Varibles"
+)
 ## 'maxEvents' is already registered by the Framework, changing default value
 options.setDefault('maxEvents', -1)
 
@@ -456,11 +501,14 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 process.MessageLogger.cerr.default.limit = 10
 
 ## Input files
-process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring()
+process.source = cms.Source(
+	"PoolSource",
+	fileNames = cms.untracked.vstring()
 )
 
-if options.miniAOD:
+if options.inputFiles:
+	process.source.fileNames = options.inputFiles
+elif options.miniAOD:
     process.source.fileNames = [
         #'/store/relval/CMSSW_8_0_0/RelValTTbar_13/MINIAODSIM/PU25ns_80X_mcRun2_asymptotic_v4-v1/10000/A65CD249-BFDA-E511-813A-0025905A6066.root'
         '/store/mc/RunIISpring16MiniAODv2/QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/90000/02A0E7CE-1B35-E611-8612-0CC47A7FC4C8.root'
@@ -1174,14 +1222,15 @@ if options.useLegacyTaggers:
 #------------------
 process.btagana.tracksColl            = cms.InputTag(trackSource) 
 process.btagana.useSelectedTracks     = True  ## False if you want to run on all tracks : for commissioning studies
-process.btagana.useTrackHistory       = False ## Can only be used with GEN-SIM-RECODEBUG files
-process.btagana.fillsvTagInfo         = False ## True if you want to store information relative to the svTagInfos, set to False if produceJetTrackTree is set to False
-process.btagana.produceJetTrackTree   = False ## True if you want to keep info for tracks associated to jets : for commissioning studies
-process.btagana.produceAllTrackTree   = False ## True if you want to keep info for all tracks : for commissioning studies
+process.btagana.useTrackHistory       = options.trkHistory ## Can only be used with GEN-SIM-RECODEBUG files
+process.btagana.fillsvTagInfo         = options.fillsvTagInfo ## True if you want to store information relative to the svTagInfos, set to False if produceJetTrackTree is set to False
+process.btagana.produceJetTrackTree   = options.storeJetTracks ## True if you want to keep info for tracks associated to jets : for commissioning studies
+process.btagana.produceHelixInfo      = options.produceHelixInfo
+process.btagana.produceAllTrackTree   = options.allTracks ## True if you want to keep info for all tracks : for commissioning studies
 process.btagana.producePtRelTemplate  = options.producePtRelTemplate  ## True for performance studies
 #------------------
-process.btagana.storeTagVariables     = False  ## True if you want to keep TagInfo TaggingVariables
-process.btagana.storeCSVTagVariables  = True   ## True if you want to keep CSV TaggingVariables
+process.btagana.storeTagVariables     = options.storeTagVariables  ## True if you want to keep TagInfo TaggingVariables
+process.btagana.storeCSVTagVariables  = options.storeCSVTagVariables   ## True if you want to keep CSV TaggingVariables
 process.btagana.primaryVertexColl     = cms.InputTag(pvSource)
 process.btagana.Jets                  = cms.InputTag(patJetSource)
 process.btagana.muonCollectionName    = cms.InputTag(muSource)
@@ -1191,6 +1240,8 @@ process.btagana.use_ttbar_filter      = cms.bool(options.useTTbarFilter)
 process.btagana.triggerTable          = cms.InputTag(trigresults) # Data and MC
 process.btagana.genParticles          = cms.InputTag(genParticles)
 process.btagana.candidates            = cms.InputTag(pfCandidates)
+#gen filling
+process.btagana.storeMCInfo = False;
 
 if options.doCTag:
     process.btagana.storeCTagVariables = True
@@ -1301,6 +1352,33 @@ process.p = cms.Path(
     * process.selectedEvents
     * process.analyzerSeq
 )
+
+### MY HARDCODED CUSTOMIZATION ###
+## process.pfImpactParameterTagInfosPFlow.maximumChiSquared = 99999
+## process.pfImpactParameterTagInfosPFlow.maximumLongitudinalImpactParameter = 99999
+process.pfImpactParameterTagInfosPFlow.maximumTransverseImpactParameter = 99999
+process.pfImpactParameterTagInfosPFlow.minimumNumberOfHits = 0
+process.pfImpactParameterTagInfosPFlow.minimumNumberOfPixelHits = 0
+## process.pfImpactParameterTagInfosPFlow.minimumTransverseMomentum = 0.
+## 
+process.candidateCombinedSecondaryVertexV2Computer.trackSelection.jetDeltaRMax = 0.4
+process.candidateCombinedSecondaryVertexV2Computer.trackSelection.maxDecayLen = 99999
+process.candidateCombinedSecondaryVertexV2Computer.trackSelection.maxDistToAxis = 99999
+process.candidateCombinedSecondaryVertexV2Computer.trackSelection.pixelHitsMin = 0
+
+if options.noTrackSelection:
+	process.pfImpactParameterTagInfosPFlow.maximumChiSquared = 99999 
+	process.pfImpactParameterTagInfosPFlow.maximumLongitudinalImpactParameter = 99999  
+	process.pfImpactParameterTagInfosPFlow.minimumTransverseMomentum = 0. 
+
+process.lheFilt = cms.EDFilter(
+	'LHEParticleFilter',
+	src = cms.InputTag('externalLHEProducer'),
+  reject = cms.vint32(11,13,15,-11,-13,-15),
+  reject_moms = cms.vint32(24, -24),
+	flagMode = cms.bool(True)
+)
+process.filtSeq *= process.lheFilt
 
 # Delete predefined output module (needed for running with CRAB)
 del process.out

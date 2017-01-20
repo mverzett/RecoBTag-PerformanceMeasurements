@@ -187,6 +187,8 @@ class JetInfoBranches {
     int   Track_nHitPXB[nMaxTrk_];
     int   Track_nHitPXF[nMaxTrk_];
     int   Track_isHitL1[nMaxTrk_];
+		int 	Track_nSiLayers[nMaxTrk_];
+		int 	Track_nPxLayers[nMaxTrk_];
     int   Track_PV[nMaxTrk_];
     int   Track_SV[nMaxTrk_];
     int   Track_isfromSV[nMaxTrk_];
@@ -196,7 +198,36 @@ class JetInfoBranches {
     float Track_lengthTau[nMaxTrk_];
     float Track_distTau[nMaxTrk_];    
     int   Track_category[nMaxTrk_];
-    unsigned int   Track_hitpattern[nMaxTrk_];
+		//Other stuff
+		float Track_dxyErr[nMaxTrk_]   ;
+		float Track_dzErr[nMaxTrk_]    ;
+		int   Track_ndof[nMaxTrk_]     ;
+		int   Track_quality[nMaxTrk_]  ;
+		int   Track_nLostHits[nMaxTrk_];
+		int   Track_nInactiveHits[nMaxTrk_];
+		//helix parameters
+		float Track_helixCurv[nMaxTrk_];
+		float Track_helixTransIP[nMaxTrk_];
+		float Track_helixLongIP[nMaxTrk_];
+		float Track_helixTheta[nMaxTrk_];
+		float Track_helixPhi[nMaxTrk_];
+		//helix covariance matrix (15 paramenters)
+		float Track_helixCovarinace00[nMaxTrk_];
+		float Track_helixCovarinace01[nMaxTrk_];
+		float Track_helixCovarinace02[nMaxTrk_];
+		float Track_helixCovarinace03[nMaxTrk_];
+		float Track_helixCovarinace04[nMaxTrk_];
+		float Track_helixCovarinace05[nMaxTrk_];
+		float Track_helixCovarinace06[nMaxTrk_];
+		float Track_helixCovarinace07[nMaxTrk_];
+		float Track_helixCovarinace08[nMaxTrk_];
+		float Track_helixCovarinace09[nMaxTrk_];
+		float Track_helixCovarinace10[nMaxTrk_];
+		float Track_helixCovarinace11[nMaxTrk_];
+		float Track_helixCovarinace12[nMaxTrk_];
+		float Track_helixCovarinace13[nMaxTrk_];
+		float Track_helixCovarinace14[nMaxTrk_];
+		
 
     int   nTrkInc;
     float TrkInc_pt[nMaxTrk_];
@@ -312,6 +343,8 @@ class JetInfoBranches {
     float TagVar_trackNPixelHits[nMaxTrk_];                          // number of valid pixel hits
     // per jet per secondary vertex
     int   nSVTagVar;
+		float TagVar_vertexDPhi[nMaxSVs_];
+		float TagVar_vertexDEta[nMaxSVs_];
     float TagVar_vertexMass[nMaxSVs_];                               // mass of track sum at secondary vertex
     float TagVar_vertexNTracks[nMaxSVs_];                            // number of tracks at secondary vertex
     float TagVar_vertexJetDeltaR[nMaxSVs_];                          // pseudoangular distance between jet axis and secondary vertex direction
@@ -612,6 +645,8 @@ class JetInfoBranches {
       tree->Branch((name+"Track_nHitPXB").c_str()    ,Track_nHitPXB    ,(name+"Track_nHitPXB["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_nHitPXF").c_str()    ,Track_nHitPXF    ,(name+"Track_nHitPXF["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_isHitL1").c_str()    ,Track_isHitL1    ,(name+"Track_isHitL1["+name+"nTrack]/I").c_str());
+			tree->Branch((name+"Track_nSiLayers").c_str()  ,Track_nSiLayers  ,(name+"Track_nSiLayers["+name+"nTrack]/I").c_str());
+			tree->Branch((name+"Track_nPxLayers").c_str()  ,Track_nPxLayers  ,(name+"Track_nPxLayers["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_PV").c_str()         ,Track_PV         ,(name+"Track_PV["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_SV").c_str()         ,Track_SV         ,(name+"Track_SV["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_PVweight").c_str()   ,Track_PVweight   ,(name+"Track_PVweight["+name+"nTrack]/F").c_str());
@@ -619,7 +654,37 @@ class JetInfoBranches {
       tree->Branch((name+"Track_isfromSV").c_str()   ,Track_isfromSV   ,(name+"Track_isfromSV["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_isfromV0").c_str()   ,Track_isfromV0   ,(name+"Track_isfromV0["+name+"nTrack]/I").c_str());
       tree->Branch((name+"Track_category").c_str()   ,Track_category   ,(name+"Track_category["+name+"nTrack]/I").c_str());
-      tree->Branch((name+"Track_hitpattern").c_str() ,Track_hitpattern ,(name+"Track_hitpattern["+name+"nTrack]/i").c_str());
+			//moar stuff
+			tree->Branch((name+"Track_dxyErr").c_str(), Track_dxyErr       , (name+"Track_dxyErr["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_dzErr").c_str(), Track_dzErr				 , (name+"Track_dzErr["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_ndof").c_str(), Track_ndof				 , (name+"Track_ndof["+name+"nTrack]/I").c_str());
+			tree->Branch((name+"Track_quality").c_str(), Track_quality			 , (name+"Track_quality["+name+"nTrack]/I").c_str());
+			tree->Branch((name+"Track_nLostHits").c_str(), Track_nLostHits		 , (name+"Track_nLostHits["+name+"nTrack]/I").c_str());
+			tree->Branch((name+"Track_nInactiveHits").c_str(), Track_nInactiveHits, (name+"Track_nInactiveHits["+name+"nTrack]/I").c_str());			
+		}
+    void RegisterHelixTree(TTree *tree, std::string name="") {
+			//helix parameters
+			tree->Branch((name+"Track_helixCurv").c_str()   , Track_helixCurv   , (name+"Track_helixCurv["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixTransIP").c_str(),	Track_helixTransIP,	(name+"Track_helixTransIP["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixLongIP").c_str() ,	Track_helixLongIP ,	(name+"Track_helixLongIP["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixTheta").c_str()  ,	Track_helixTheta 	,	(name+"Track_helixTheta["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixPhi").c_str()    ,	Track_helixPhi    , (name+"Track_helixPhi["+name+"nTrack]/F").c_str());
+			//helix covariance matrix (15 paramenters)
+			tree->Branch((name+"Track_helixCovarinace00").c_str(), Track_helixCovarinace00, (name+"Track_helixCovarinace00["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace01").c_str(), Track_helixCovarinace01,	(name+"Track_helixCovarinace01["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace02").c_str(), Track_helixCovarinace02,	(name+"Track_helixCovarinace02["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace03").c_str(), Track_helixCovarinace03,	(name+"Track_helixCovarinace03["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace04").c_str(), Track_helixCovarinace04,	(name+"Track_helixCovarinace04["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace05").c_str(), Track_helixCovarinace05,	(name+"Track_helixCovarinace05["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace06").c_str(), Track_helixCovarinace06,	(name+"Track_helixCovarinace06["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace07").c_str(), Track_helixCovarinace07,	(name+"Track_helixCovarinace07["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace08").c_str(), Track_helixCovarinace08,	(name+"Track_helixCovarinace08["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace09").c_str(), Track_helixCovarinace09,	(name+"Track_helixCovarinace09["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace10").c_str(), Track_helixCovarinace10,	(name+"Track_helixCovarinace10["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace11").c_str(), Track_helixCovarinace11,	(name+"Track_helixCovarinace11["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace12").c_str(), Track_helixCovarinace12,	(name+"Track_helixCovarinace12["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace13").c_str(), Track_helixCovarinace13,	(name+"Track_helixCovarinace13["+name+"nTrack]/F").c_str());
+			tree->Branch((name+"Track_helixCovarinace14").c_str(), Track_helixCovarinace14, (name+"Track_helixCovarinace14["+name+"nTrack]/F").c_str());
     }
 
     void RegisterJetTrackIncTree(TTree *tree, std::string name="") {
@@ -685,6 +750,8 @@ class JetInfoBranches {
       tree->Branch((name+"TagVar_trackNPixelHits").c_str()   ,TagVar_trackNPixelHits   ,(name+"TagVar_trackNPixelHits["+name+"nTrkTagVar]/F").c_str()  );
 
       tree->Branch((name+"nSVTagVar").c_str()                       ,&nSVTagVar                      ,(name+"nSVTagVar/I").c_str()                                     );
+			tree->Branch((name+"TagVar_vertexDPhi").c_str()               ,TagVar_vertexDPhi               ,(name+"TagVar_vertexDPhi["+name+"nSVTagVar]/F").c_str()          );
+			tree->Branch((name+"TagVar_vertexDEta").c_str()               ,TagVar_vertexDEta               ,(name+"TagVar_vertexDEta["+name+"nSVTagVar]/F").c_str()          );
       tree->Branch((name+"TagVar_vertexMass").c_str()               ,TagVar_vertexMass               ,(name+"TagVar_vertexMass["+name+"nSVTagVar]/F").c_str()          );
       tree->Branch((name+"TagVar_vertexNTracks").c_str()            ,TagVar_vertexNTracks            ,(name+"TagVar_vertexNTracks["+name+"nSVTagVar]/F").c_str()       );
       tree->Branch((name+"TagVar_vertexJetDeltaR").c_str()          ,TagVar_vertexJetDeltaR          ,(name+"TagVar_vertexJetDeltaR["+name+"nSVTagVar]/F").c_str()     );
@@ -1081,6 +1148,8 @@ class JetInfoBranches {
       tree->SetBranchAddress((name+"Track_nHitPXB").c_str()   ,Track_nHitPXB  ) ;
       tree->SetBranchAddress((name+"Track_nHitPXF").c_str()   ,Track_nHitPXF  ) ;
       tree->SetBranchAddress((name+"Track_isHitL1").c_str()   ,Track_isHitL1  ) ;
+			tree->SetBranchAddress((name+"Track_nSiLayers").c_str() ,Track_nSiLayers) ;
+			tree->SetBranchAddress((name+"Track_nPxLayers").c_str() ,Track_nPxLayers) ;
       tree->SetBranchAddress((name+"Track_PV").c_str()        ,Track_PV       ) ;
       tree->SetBranchAddress((name+"Track_SV").c_str()        ,Track_SV       ) ;
       tree->SetBranchAddress((name+"Track_PVweight").c_str()  ,Track_PVweight ) ;
@@ -1088,7 +1157,6 @@ class JetInfoBranches {
       tree->SetBranchAddress((name+"Track_isfromSV").c_str()  ,Track_isfromSV ) ;
        tree->SetBranchAddress((name+"Track_isfromV0").c_str()  ,Track_isfromV0 ) ;
       tree->SetBranchAddress((name+"Track_category").c_str()  ,Track_category ) ;
-			tree->SetBranchAddress((name+"Track_hitpattern").c_str()  ,Track_hitpattern) ;
     }
 
     void ReadJetTrackIncTree(TTree *tree, std::string name="") {

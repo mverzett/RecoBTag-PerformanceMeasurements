@@ -11,6 +11,7 @@ class EventInfoBranches {
 
   public :
 
+  	bool  lheFilter;
     int   nBitTrigger;
     int   BitTrigger[100];
     int   Run;
@@ -128,14 +129,20 @@ class EventInfoBranches {
 
     int   nTrkAll;
     float TrkAll_d0[nMaxTrk_];
+		float TrkAll_d0Err[nMaxTrk_];
     float TrkAll_dz[nMaxTrk_];
+		float TrkAll_dzErr[nMaxTrk_];
     float TrkAll_p[nMaxTrk_];
     float TrkAll_pt[nMaxTrk_];
     float TrkAll_eta[nMaxTrk_];
     float TrkAll_phi[nMaxTrk_];
     float TrkAll_chi2[nMaxTrk_];
+		int   TrkAll_ndof[nMaxTrk_];
+		int   TrkAll_quality[nMaxTrk_];
     int   TrkAll_charge[nMaxTrk_];
     int   TrkAll_nHitAll[nMaxTrk_];
+		int   TrkAll_nLostHits[nMaxTrk_];
+		int   TrkAll_nInactiveHits[nMaxTrk_];
     int   TrkAll_nHitPixel[nMaxTrk_];
     int   TrkAll_nHitStrip[nMaxTrk_];
     int   TrkAll_nHitTIB[nMaxTrk_];
@@ -181,6 +188,7 @@ class EventInfoBranches {
 
 
     void RegisterTree(TTree *tree) {
+      tree->Branch("lheFilter"  , &lheFilter  ,  "lheFilter/O");
       tree->Branch("nBitTrigger", &nBitTrigger,  "nBitTrigger/I");
       tree->Branch("BitTrigger" , BitTrigger  ,  "BitTrigger[nBitTrigger]/I");
       tree->Branch("Run"        , &Run        ,  "Run/I");
@@ -301,14 +309,20 @@ class EventInfoBranches {
     void RegisterAllTrackTree(TTree *tree) {
       tree->Branch("nTrkAll",          &nTrkAll,         "nTrkAll/I"                  );
       tree->Branch("TrkAll_d0",        TrkAll_d0,        "TrkAll_d0[nTrkAll]/F"       );
+      tree->Branch("TrkAll_d0Err",     TrkAll_d0Err,     "TrkAll_d0Err[nTrkAll]/F"    );
       tree->Branch("TrkAll_dz",        TrkAll_dz,        "TrkAll_dz[nTrkAll]/F"       );
+      tree->Branch("TrkAll_dzErr",     TrkAll_dzErr,     "TrkAll_dzErr[nTrkAll]/F"    );
       tree->Branch("TrkAll_p",         TrkAll_p,         "TrkAll_p[nTrkAll]/F"        );
       tree->Branch("TrkAll_pt",        TrkAll_pt,        "TrkAll_pt[nTrkAll]/F"       );
       tree->Branch("TrkAll_eta",       TrkAll_eta,       "TrkAll_eta[nTrkAll]/F"      );
       tree->Branch("TrkAll_phi",       TrkAll_phi,       "TrkAll_phi[nTrkAll]/F"      );
       tree->Branch("TrkAll_chi2",      TrkAll_chi2,      "TrkAll_chi2[nTrkAll]/F"     );
+      tree->Branch("TrkAll_ndof",      TrkAll_ndof,      "TrkAll_ndof[nTrkAll]/I"     );
+      tree->Branch("TrkAll_quality",   TrkAll_quality,   "TrkAll_quality[nTrkAll]/I"  );
       tree->Branch("TrkAll_charge",    TrkAll_charge,    "TrkAll_charge[nTrkAll]/I"   );
       tree->Branch("TrkAll_nHitAll",   TrkAll_nHitAll,   "TrkAll_nHitAll[nTrkAll]/I"  );
+      tree->Branch("TrkAll_nLostHits", TrkAll_nLostHits, "TrkAll_nLostHits[nTrkAll]/I");
+      tree->Branch("TrkAll_nInactiveHits", TrkAll_nInactiveHits, "TrkAll_nInactiveHits[nTrkAll]/I");
       tree->Branch("TrkAll_nHitPixel", TrkAll_nHitPixel, "TrkAll_nHitPixel[nTrkAll]/I");
       tree->Branch("TrkAll_nHitStrip", TrkAll_nHitStrip, "TrkAll_nHitStrip[nTrkAll]/I");
       tree->Branch("TrkAll_nHitTIB",   TrkAll_nHitTIB,   "TrkAll_nHitTIB[nTrkAll]/I"  );
